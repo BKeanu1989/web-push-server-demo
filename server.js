@@ -22,16 +22,12 @@ const vapidDetails = {
   privateKey: process.env.VAPID_PRIVATE_KEY,
   subject: process.env.VAPID_SUBJECT
 };
-console.log("🚀 ~ file: server.js ~ line 25 ~ vapidDetails", vapidDetails)
-
-// db.defaults({
-//   subscriptions: []
-// }).write();45
 
 try {
     const subscriptions = await db.getData('/subscriptions')
     console.log("🚀 ~ file: server.js ~ line 32 ~ subscriptions", subscriptions)
 } catch (error) {
+    console.info("INIT NEW DB")
     await db.push("/subscriptions", [], true);
 }
 
@@ -70,35 +66,45 @@ const app = express();
 app.use(bodyparser.json());
 app.use(express.static('public'));
 
-app.post('/add-subscription', (request, response) => {
+app.post('/add-subscription', async (request, response) => {
   console.log('/add-subscription');
   console.log(request.body);
   console.log(`Subscribing ${request.body.endpoint}`);
-  db.getData('/subscriptions')
-    .push(request.body)
-    .write();
+  await db.push('/subscriptions[]', request.body)
   response.sendStatus(200);
 });
 
-app.post('/remove-subscription', (request, response) => {
-  console.log('/remove-subscription');
-  console.log(request.body);
-  console.log(`Unsubscribing ${request.body.endpoint}`);
-  db.getData('/subscriptions')
-    .remove({endpoint: request.body.endpoint})
-    .write();
-  response.sendStatus(200);
+app.post('/remove-subscription', async (request, response) => {
+    try {
+        console.log('/remove-subscription');
+        console.log(request.body);
+        console.log(`Unsubscribing ${request.body.endpoint}`);
+      
+        // TODO:
+        const id = await db.getData('/subscriptions')
+          .find({endpoint: request.body.endpoint})
+          await db.delete(`/subscriptions[${id}]`)
+        response.sendStatus(200);
+    } catch (error) {
+        console.error(error)
+        response.sendStatus(500).send('Internal Server Error')
+    }
 });
 
-app.post('/notify-me', (request, response) => {
-  console.log('/notify-me');
-  console.log(request.body);
-  console.log(`Notifying ${request.body.endpoint}`);
-  const subscription = 
-  db.getData('/10').find({endpoint: request.body.endpoint});
-  console.log("🚀 ~ file: server.js ~ line 96 ~ app.post ~ subscription", subscription)
-  sendNotifications([subscription]);
-  response.sendStatus(200);
+app.post('/notify-me', async (request, response) => {
+    try {
+        console.log('/notify-me');
+        console.log(request.body);
+        console.log(`Notifying ${request.body.endpoint}`);
+        const subscription = await db.getData('/subscriptions')
+        console.log("🚀 ~ file: server.js ~ line 96 ~ app.post ~ subscription", subscription)
+        sendNotifications([subscription]);
+        response.sendStatus(200);
+        
+    } catch (error) {
+        console.error(error)
+        response.sendStatus(500).send('Internal Server Error')
+    }
 });
 
 app.post('/notify-all', async (request, response) => {
@@ -115,14 +121,12 @@ app.post('/notify-all', async (request, response) => {
       }
       response.sendStatus(200);
   } catch (error) {
+    console.log(error)
     response.sendStatus(500).send('Internal Server error')
   }
 });
 
 app.get('/', (request, response) => {
-    console.log('dirname', dirname)
-    
-    //   response.sendFile(path.resolve('.') + '/views/index.html');
   response.sendFile(path.join(dirname, 'views/index.html'));
 });
 
