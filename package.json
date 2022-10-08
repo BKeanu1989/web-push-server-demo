@@ -2,18 +2,23 @@
   "name": "web-push-server",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "[ -e .data/db.json ] && rm .data/db.json",
+    "start": "npm run clean; node server.js;",
+    "start:2": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.1",
+    "dotenv": "^16.0.3",
     "express": "^4.18.1",
     "express-session": "^1.17.3",
     "lowdb": "^3.0.0",
+    "node-json-db": "^2.1.3",
     "web-push": "^3.5.0"
   }
 }
