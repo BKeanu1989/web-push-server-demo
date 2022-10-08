@@ -1,4 +1,4 @@
-const VAPID_PUBLIC_KEY = 'VAPID_PUBLIC_KEY_VALUE_HERE';
+const VAPID_PUBLIC_KEY = 'BIN4-jnf6PK5yW395EElnHQlcQo49_oLD94Z7y630A_d1AmYOPcH5Ma0oDz4x46pu2uwX8xuoMdV2gDzTcG4I5A';
 
 /* Push notification logic. */
 

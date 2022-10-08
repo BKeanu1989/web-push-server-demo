@@ -22,10 +22,11 @@ const vapidDetails = {
   privateKey: process.env.VAPID_PRIVATE_KEY,
   subject: process.env.VAPID_SUBJECT
 };
+console.log("🚀 ~ file: server.js ~ line 25 ~ vapidDetails", vapidDetails)
 
 // db.defaults({
 //   subscriptions: []
-// }).write();
+// }).write();45
 
 try {
     const subscriptions = await db.getData('/subscriptions')
@@ -94,24 +95,28 @@ app.post('/notify-me', (request, response) => {
   console.log(request.body);
   console.log(`Notifying ${request.body.endpoint}`);
   const subscription = 
-  db.getData('/subscriptions').find({endpoint: request.body.endpoint}).value();
+  db.getData('/10').find({endpoint: request.body.endpoint});
   console.log("🚀 ~ file: server.js ~ line 96 ~ app.post ~ subscription", subscription)
   sendNotifications([subscription]);
   response.sendStatus(200);
 });
 
-app.post('/notify-all', (request, response) => {
+app.post('/notify-all', async (request, response) => {
   console.log('/notify-all');
   console.log('Notifying all subscribers');
-  const subscriptions =
-      db.getData('/subscriptions').cloneDeep().value();
-  if (subscriptions.length > 0) {
-    sendNotifications(subscriptions);
-    response.sendStatus(200);
-  } else {
-    response.sendStatus(409);
+  const subscriptions = await db.getData('/subscriptions');
+  console.log("🚀 ~ file: server.js ~ line 107 ~ app.post ~ subscriptions", subscriptions)
+  try {
+      if (subscriptions.length > 0) {
+        sendNotifications(subscriptions);
+        response.sendStatus(200);
+      } else {
+        response.sendStatus(409);
+      }
+      response.sendStatus(200);
+  } catch (error) {
+    response.sendStatus(500).send('Internal Server error')
   }
-  response.sendStatus(200);
 });
 
 app.get('/', (request, response) => {
