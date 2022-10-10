@@ -11,3 +11,6 @@ VAPID_SUBJECT="mailto:test@test.test"
 ```
 
 -[ ] change index.js accordingly
+
+## Next
+- [ ] Server Send events ... push to clients

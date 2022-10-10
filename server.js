@@ -46,10 +46,14 @@ function sendNotifications(subscriptions) {
         TTL: 10000,
         vapidDetails: vapidDetails
       };
+      console.info("start send notifications per subscription")
+
       // Send a push message to each client specified in the subscriptions array.
       subscriptions.forEach(subscription => {
         const endpoint = subscription.endpoint;
+        console.log("🚀 ~ file: server.js ~ line 63 ~ sendNotifications ~ subscription", subscription)
         const id = endpoint.substr((endpoint.length - 8), endpoint.length);
+        console.log("🚀 ~ file: server.js ~ line 55 ~ sendNotifications ~ id", id)
         webpush.sendNotification(subscription, notification, options)
           .then(result => {
             console.log(`Endpoint ID: ${id}`);
@@ -81,8 +85,12 @@ app.post('/remove-subscription', async (request, response) => {
         console.log(`Unsubscribing ${request.body.endpoint}`);
       
         // TODO:
-        const id = await db.getData('/subscriptions')
-          .find({endpoint: request.body.endpoint})
+        const allSubscription = await db.getData('/subscriptions')
+        console.log("🚀 ~ file: server.js ~ line 87 ~ app.post ~ allSubscription", allSubscription)
+        
+        const id = allSubscription.findIndex(single => single.endpoint === request.body.endpoint)
+         console.log("🚀 ~ file: server.js ~ line 85 ~ app.post ~ id", id)
+         
           await db.delete(`/subscriptions[${id}]`)
         response.sendStatus(200);
     } catch (error) {
@@ -96,7 +104,9 @@ app.post('/notify-me', async (request, response) => {
         console.log('/notify-me');
         console.log(request.body);
         console.log(`Notifying ${request.body.endpoint}`);
-        const subscription = await db.getData('/subscriptions')
+        const allSubscription = await db.getData('/subscriptions')
+        console.log("🚀 ~ file: server.js ~ line 103 ~ app.post ~ allSubscription", allSubscription)
+        const subscription = allSubscription.find((single) => single.endpoint === request.body.endpoint)
         console.log("🚀 ~ file: server.js ~ line 96 ~ app.post ~ subscription", subscription)
         sendNotifications([subscription]);
         response.sendStatus(200);
@@ -119,12 +129,28 @@ app.post('/notify-all', async (request, response) => {
       } else {
         response.sendStatus(409);
       }
-      response.sendStatus(200);
   } catch (error) {
     console.log(error)
     response.sendStatus(500).send('Internal Server error')
   }
 });
+
+async function pushToClients() {
+    const subscriptions = await db.getData('/subscriptions');
+    console.log("🚀 ~ file: server.js ~ line 131 ~ RUN pushToClients ~ subscriptions", subscriptions)
+    try {
+        if (subscriptions.length > 0) {
+          sendNotifications(subscriptions);
+        }
+        
+    } catch (error) {
+      console.log(error)
+    }
+}
+
+// setInterval(() => {
+//     pushToClients()
+// }, 30000)
 
 app.get('/', (request, response) => {
   response.sendFile(path.join(dirname, 'views/index.html'));

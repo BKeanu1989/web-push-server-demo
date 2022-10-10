@@ -7,7 +7,8 @@
   "scripts": {
     "clean": "[ -e .data/db.json ] && rm .data/db.json",
     "start": "npm run clean; node server.js;",
-    "start:2": "node server.js"
+    "start:2": "node server.js",
+    "generate:keys": "web-push generate-vapid-keys --json"
   },
   "keywords": [],
   "author": "",
